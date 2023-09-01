@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getApiConfiguration } from "./store/homeSlice";
+import { getApiConfiguration, getGenres } from "./store/homeSlice";
 import { fetchDataFromTMDBApi } from "./utils/api";
 
 import Header from "./components/header/Header";
@@ -17,6 +17,7 @@ function App() {
 
   useEffect(() => {
     apiConfiguration();
+    genresCall();
   }, []);
 
   const apiConfiguration = async () => {
@@ -28,6 +29,26 @@ function App() {
     };
 
     dispatch(getApiConfiguration(url));
+  };
+
+  const genresCall = async () => {
+    let promises = [];
+    let endPoints = ["tv", "movie"];
+
+    let allGenres = {};
+
+    endPoints.forEach((url) => {
+      promises.push(fetchDataFromTMDBApi(`/genre/${url}/list`));
+    });
+
+    const data = await Promise.all(promises);
+    data.map(({ genres }) => {
+      return genres.map((item) => {
+        return (allGenres[item.id] = item);
+      });
+    });
+
+    dispatch(getGenres(allGenres));
   };
 
   return (
