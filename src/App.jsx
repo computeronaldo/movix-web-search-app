@@ -1,16 +1,44 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { getApiConfiguration, getGenres } from "./store/homeSlice";
 import { fetchDataFromTMDBApi } from "./utils/api";
 
-import Header from "./components/header/Header";
-import Footer from "./components/footer/Footer";
+import SharedUI from "./pages/sharedUI/SharedUI";
 import PageNotFound from "./pages/404/PageNotFound";
 import Home from "./pages/home/Home";
 import SearchResult from "./pages/searchResult/SearchResult";
 import Explore from "./pages/explore/Explore";
 import Details from "./pages/details/Details";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <SharedUI />,
+    children: [
+      {
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: "/:mediaType/:id",
+        element: <Details />,
+      },
+      {
+        path: "/search/:query",
+        element: <SearchResult />,
+      },
+      {
+        path: "/explore/:mediaType",
+        element: <Explore />,
+      },
+      {
+        path: "*",
+        element: <PageNotFound />,
+      },
+    ],
+  },
+]);
 
 function App() {
   const dispatch = useDispatch();
@@ -50,20 +78,7 @@ function App() {
 
     dispatch(getGenres(allGenres));
   };
-
-  return (
-    <BrowserRouter>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/:mediaType/:id" element={<Details />} />
-        <Route path="/search/:query" element={<SearchResult />} />
-        <Route path="/explore/:mediaType" element={<Explore />} />
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-      <Footer />
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
