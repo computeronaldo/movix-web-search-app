@@ -9,7 +9,7 @@ import PageNotFound from "./pages/404/PageNotFound";
 import Home from "./pages/home/Home";
 import SearchResult from "./pages/searchResult/SearchResult";
 import Explore from "./pages/explore/Explore";
-import Details from "./pages/details/Details";
+import Details, { loader as detailsLoader } from "./pages/details/Details";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +23,7 @@ const router = createBrowserRouter([
       {
         path: "/:mediaType/:id",
         element: <Details />,
+        loader: detailsLoader,
       },
       {
         path: "/search/:query",
