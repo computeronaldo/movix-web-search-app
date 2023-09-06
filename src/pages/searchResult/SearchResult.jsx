@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState, useEffect, useLayoutEffect } from "react";
+import { useLoaderData, useParams } from "react-router-dom";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 import style from "./style.scss";
@@ -11,24 +11,13 @@ import Spinner from "../../components/spinner/Spinner";
 import noResults from "../../assets/no-results.png";
 
 const SearchResult = () => {
+  const initialData = useLoaderData();
+
   const [data, setData] = useState(null);
   const [pageNum, setPageNum] = useState(1);
   const [loading, setLoading] = useState(false);
 
   const { query } = useParams();
-
-  const fetchInitialData = async () => {
-    setLoading(true);
-    const res = await fetchDataFromTMDBApi(
-      `/search/multi?query=${query}&page=${pageNum}`
-    );
-
-    if (res) {
-      setData(res);
-      setLoading(false);
-      setPageNum((prev) => prev + 1);
-    }
-  };
 
   const fetchNextPageData = async () => {
     setLoading(true);
@@ -49,9 +38,9 @@ const SearchResult = () => {
   };
 
   useEffect(() => {
-    setPageNum(1);
-    fetchInitialData();
-  }, [query]);
+    setPageNum((prev) => prev + 1);
+    setData(initialData);
+  }, [initialData]);
 
   return (
     <div className="searchResultsPage">
@@ -80,7 +69,10 @@ const SearchResult = () => {
               </InfiniteScroll>
             </>
           ) : (
-            <span className="resultNotFound">Sorry, results not found!</span>
+            <>
+              <span className="resultNotFound">Sorry, results not found!</span>
+              <img src={noResults} alt="no results" className="noResultsImg" />
+            </>
           )}
         </ContentWrapper>
       )}
@@ -90,3 +82,10 @@ const SearchResult = () => {
 };
 
 export default SearchResult;
+
+export const loader = async ({ params }) => {
+  const { query } = params;
+
+  const res = await fetchDataFromTMDBApi(`/search/multi?query=${query}&page=1`);
+  return res;
+};

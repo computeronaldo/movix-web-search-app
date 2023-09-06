@@ -7,7 +7,9 @@ import { fetchDataFromTMDBApi } from "./utils/api";
 import SharedUI from "./pages/sharedUI/SharedUI";
 import PageNotFound from "./pages/404/PageNotFound";
 import Home from "./pages/home/Home";
-import SearchResult from "./pages/searchResult/SearchResult";
+import SearchResult, {
+  loader as searchResultLoader,
+} from "./pages/searchResult/SearchResult";
 import Explore from "./pages/explore/Explore";
 import Details, { loader as detailsLoader } from "./pages/details/Details";
 
@@ -28,6 +30,7 @@ const router = createBrowserRouter([
       {
         path: "/search/:query",
         element: <SearchResult />,
+        loader: searchResultLoader,
       },
       {
         path: "/explore/:mediaType",
