@@ -22,7 +22,6 @@ const Details = () => {
       >
         {(value) => {
           const [videos, credits] = value;
-          console.log(videos, credits);
           return (
             <div>
               <DetailsBanner
