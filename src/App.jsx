@@ -10,7 +10,7 @@ import Home from "./pages/home/Home";
 import SearchResult, {
   loader as searchResultLoader,
 } from "./pages/searchResult/SearchResult";
-import Explore from "./pages/explore/Explore";
+import Explore, { loader as exploreLoader } from "./pages/explore/Explore";
 import Details, { loader as detailsLoader } from "./pages/details/Details";
 
 const router = createBrowserRouter([
@@ -35,6 +35,7 @@ const router = createBrowserRouter([
       {
         path: "/explore/:mediaType",
         element: <Explore />,
+        loader: exploreLoader,
       },
       {
         path: "*",

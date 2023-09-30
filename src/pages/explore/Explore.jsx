@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams, useLoaderData } from "react-router-dom";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Select from "react-select";
 
 import "./style.scss";
 
-import useFetch from "../../hooks/useFetch";
 import { fetchDataFromTMDBApi } from "../../utils/api";
 import ContentWrapper from "../../components/contentWrapper/ContentWrapper";
 import MovieCard from "../../components/movieCard/MovieCard";
@@ -33,11 +32,47 @@ const Explore = () => {
   const [genre, setGenre] = useState(null);
   const [sortby, setSortby] = useState(null);
   const { mediaType } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const genresData = useLoaderData();
 
-  const { data: genresData } = useFetch(`/genre/${mediaType}/list`);
+  const setInitialQueryParams = () => {
+    const selectedGenres = searchParams.get("genre");
+    if (selectedGenres) {
+      let initGenres = selectedGenres.split(",").map((genre) => {
+        const foundGenre = genresData.genres.find(
+          (item) => item.name === genre
+        );
+        if (foundGenre) {
+          return foundGenre;
+        }
+      });
+      setGenre(initGenres);
+      let selectedGenresId = selectedGenres.split(",").map((genre) => {
+        const foundGenre = genresData.genres.find(
+          (item) => item.name === genre
+        );
+        if (foundGenre) {
+          return foundGenre.id;
+        }
+      });
+      selectedGenresId = JSON.stringify(selectedGenresId).slice(1, -1);
+      filters.with_genres = selectedGenresId;
+    }
+
+    const sortByFilter = searchParams.get("sortBy");
+    if (sortByFilter) {
+      const targetSortByFilter = sortbyData.find(
+        (item) => item.value === sortByFilter
+      );
+      setSortby(targetSortByFilter);
+      filters.sort_by = sortByFilter;
+    }
+  };
 
   const fetchInitialData = () => {
+    setInitialQueryParams();
     setLoading(true);
+
     fetchDataFromTMDBApi(`/discover/${mediaType}`, filters).then((res) => {
       setData(res);
       setPageNum((prev) => prev + 1);
@@ -75,8 +110,12 @@ const Explore = () => {
     if (action.name === "sortby") {
       setSortby(selectedItems);
       if (action.action !== "clear") {
+        searchParams.set("sortBy", selectedItems.value);
+        setSearchParams(searchParams);
         filters.sort_by = selectedItems.value;
       } else {
+        searchParams.delete("sortBy");
+        setSearchParams(searchParams);
         delete filters.sort_by;
       }
     }
@@ -84,10 +123,24 @@ const Explore = () => {
     if (action.name === "genres") {
       setGenre(selectedItems);
       if (action.action !== "clear") {
+        if (selectedItems.length === 0) {
+          searchParams.delete("genre");
+          setSearchParams(searchParams);
+        } else {
+          const paramGenres = selectedItems
+            .map((item) => {
+              return item.name;
+            })
+            .join(",");
+          searchParams.set("genre", paramGenres);
+          setSearchParams(searchParams);
+        }
         let genreId = selectedItems.map((g) => g.id);
         genreId = JSON.stringify(genreId).slice(1, -1);
         filters.with_genres = genreId;
       } else {
+        searchParams.delete("genre");
+        setSearchParams(searchParams);
         delete filters.with_genres;
       }
     }
@@ -158,3 +211,18 @@ const Explore = () => {
 };
 
 export default Explore;
+
+export const loader = async ({ params }) => {
+  const { mediaType } = params;
+
+  try {
+    const data = await fetchDataFromTMDBApi(`/genre/${mediaType}/list`);
+    if (!data) {
+      throw new Error("Couldn't fetch genres info.");
+    }
+    return data;
+  } catch (err) {
+    console.log(err.message);
+  }
+  return null;
+};
