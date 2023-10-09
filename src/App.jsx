@@ -12,6 +12,7 @@ import SearchResult, {
 } from "./pages/searchResult/SearchResult";
 import Explore, { loader as exploreLoader } from "./pages/explore/Explore";
 import Details, { loader as detailsLoader } from "./pages/details/Details";
+import Redirect from "./components/Redirect";
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
         element: <PageNotFound />,
       },
     ],
+  },
+  {
+    path: "/*",
+    element: <Redirect />,
   },
 ]);
 
